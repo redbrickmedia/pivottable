@@ -661,13 +661,14 @@ callWithJQuery ($) ->
                 recordsProcessed++
 
             #start building the output
-            uiTable = $("<table>", "class": "pvtUi").attr("cellpadding", 5)
+            uiTable = $("<div>", "class": "pvtUi").attr("cellpadding", 5)
 
             #renderer control
-            rendererControl = $("<td>")
+            rendererControl = $("<div>").addClass('pvtRendererContainer')
 
             renderer = $("<select>")
                 .addClass('pvtRenderer')
+                .addClass('form-control')
                 .appendTo(rendererControl)
                 .bind "change", -> refresh() #capture reference
             for own x of opts.renderers
@@ -675,7 +676,8 @@ callWithJQuery ($) ->
 
 
             #axis list, including the double-click menu
-            unused = $("<td>").addClass('pvtAxisContainer pvtUnused')
+            unused = $("<div>").addClass('pvtAxisContainer pvtUnused')
+            unused.append("<div>Drag fields to configure the report:</div>")
             shownAttributes = (a for a of attrValues when a not in opts.hiddenAttributes)
 
             unusedAttrsVerticalAutoOverride = false
@@ -689,10 +691,7 @@ callWithJQuery ($) ->
                 attrLength += a.length for a in shownAttributes
                 unusedAttrsVerticalAutoOverride = attrLength > unusedAttrsVerticalAutoCutoff
 
-            if opts.unusedAttrsVertical == true or unusedAttrsVerticalAutoOverride
-                unused.addClass('pvtVertList')
-            else
-                unused.addClass('pvtHorizList')
+            unused.addClass('pvtVertList')
 
             for own i, attr of shownAttributes
                 do (attr) ->
@@ -735,13 +734,13 @@ callWithJQuery ($) ->
                                         else
                                             $(this).parent().parent().hide()
                             controls.append $("<br>")
-                            $("<button>", {type:"button"}).appendTo(controls)
+                            $("<button>", {type:"button"}).addClass('btn').addClass('btn-default').appendTo(controls)
                                 .html(opts.localeStrings.selectAll)
                                 .bind "click", ->
                                     valueList.find("input:visible:not(:checked)")
                                         .prop("checked", true).toggleClass("changed")
                                     return false
-                            $("<button>", {type:"button"}).appendTo(controls)
+                            $("<button>", {type:"button"}).addClass('btn').addClass('btn-default').appendTo(controls)
                                 .html(opts.localeStrings.selectNone)
                                 .bind "click", ->
                                     valueList.find("input:visible:checked")
@@ -782,13 +781,13 @@ callWithJQuery ($) ->
                     finalButtons = $("<p>").appendTo(valueList)
 
                     if values.length <= opts.menuLimit
-                        $("<button>", {type: "button"}).text(opts.localeStrings.apply)
+                        $("<button>", {type: "button"}).addClass('btn').addClass('btn-info').text(opts.localeStrings.apply)
                             .appendTo(finalButtons).bind "click", ->
                                 if valueList.find(".changed").removeClass("changed").length
                                     refresh()
                                 closeFilterBox()
 
-                    $("<button>", {type: "button"}).text(opts.localeStrings.cancel)
+                    $("<button>", {type: "button"}).addClass('btn').addClass('btn-default').text(opts.localeStrings.cancel)
                         .appendTo(finalButtons).bind "click", ->
                             valueList.find(".changed:checked")
                                 .removeClass("changed").prop("checked", false)
@@ -807,40 +806,43 @@ callWithJQuery ($) ->
                     attrElem.addClass('pvtFilteredAttribute') if hasExcludedItem
                     unused.append(attrElem).append(valueList)
 
-            tr1 = $("<tr>").appendTo(uiTable)
+            #config
+            config = $("<div>")
+              .addClass("pvtConfigContainer")
+              .appendTo(uiTable)
+
+            #renderer dropdown
+            config.append(rendererControl)
+
+            #unused attribs
+            config.append(unused)
+
+            #row axes
+            $("<div>").addClass('pvtAxisContainer pvtRows')
+              .appendTo(config)
+              .append("<div>Rows</div>")
+
+            #column axes
+            cols = $("<div>").addClass('pvtAxisContainer pvtCols')
+              .appendTo(config)
+              .append("<div>Columns</div>")
 
             #aggregator menu and value area
 
-            aggregator = $("<select>").addClass('pvtAggregator')
+            aggregator = $("<select>").addClass('pvtAggregator').addClass('form-control')
                 .bind "change", -> refresh() #capture reference
             for own x of opts.aggregators
                 aggregator.append $("<option>").val(x).html(x)
 
-            $("<td>").addClass('pvtVals')
-              .appendTo(tr1)
+            $("<div>").addClass('pvtVals')
+              .appendTo(config)
+              .append("<div>Values</div>")
               .append(aggregator)
-              .append($("<br>"))
-
-            #column axes
-            $("<td>").addClass('pvtAxisContainer pvtHorizList pvtCols').appendTo(tr1)
-
-            tr2 = $("<tr>").appendTo(uiTable)
-
-            #row axes
-            tr2.append $("<td>").addClass('pvtAxisContainer pvtRows').attr("valign", "top")
 
             #the actual pivot table container
-            pivotTable = $("<td>")
-                .attr("valign", "top")
+            pivotTable = $("<div>")
                 .addClass('pvtRendererArea')
-                .appendTo(tr2)
-
-            #finally the renderer dropdown and unused attribs are inserted at the requested location
-            if opts.unusedAttrsVertical == true or unusedAttrsVerticalAutoOverride
-                uiTable.find('tr:nth-child(1)').prepend rendererControl
-                uiTable.find('tr:nth-child(2)').prepend unused
-            else
-                uiTable.prepend $("<tr>").append(rendererControl).append(unused)
+                .appendTo(uiTable)
 
             #render the UI in its default state
             @html uiTable
@@ -884,6 +886,7 @@ callWithJQuery ($) ->
                     for x in [0...numInputsToProcess]
                         newDropdown = $("<select>")
                             .addClass('pvtAttrDropdown')
+                            .addClass('form-control')
                             .append($("<option>"))
                             .bind "change", -> refresh()
                         for attr in shownAttributes
@@ -942,7 +945,7 @@ callWithJQuery ($) ->
 
                 # if requested make sure unused columns are in alphabetical order
                 if opts.autoSortUnusedAttrs
-                    unusedAttrsContainer = @find("td.pvtUnused.pvtAxisContainer")
+                    unusedAttrsContainer = @find("div.pvtUnused.pvtAxisContainer")
                     $(unusedAttrsContainer).children("li")
                         .sort((a, b) => naturalSort($(a).text(), $(b).text()))
                         .appendTo unusedAttrsContainer

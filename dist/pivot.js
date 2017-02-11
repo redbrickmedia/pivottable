@@ -1088,15 +1088,15 @@
         pivotData = new opts.dataClass(input, opts);
         try {
           result = opts.renderer(pivotData, opts.rendererOptions);
-        } catch (_error) {
-          e = _error;
+        } catch (error) {
+          e = error;
           if (typeof console !== "undefined" && console !== null) {
             console.error(e.stack);
           }
           result = $("<span>").html(opts.localeStrings.renderError);
         }
-      } catch (_error) {
-        e = _error;
+      } catch (error) {
+        e = error;
         if (typeof console !== "undefined" && console !== null) {
           console.error(e.stack);
         }
@@ -1113,7 +1113,7 @@
     Pivot Table UI: calls Pivot Table core above with options set by user
      */
     $.fn.pivotUI = function(input, inputOpts, overwrite, locale) {
-      var a, aggregator, attr, attrLength, attrValues, defaults, e, existingOpts, fn, i, initialRender, l, len1, len2, len3, localeDefaults, localeStrings, materializedInput, n, o, opts, pivotTable, recordsProcessed, ref, ref1, ref2, ref3, refresh, refreshDelayed, renderer, rendererControl, shownAttributes, tr1, tr2, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, x;
+      var a, aggregator, attr, attrLength, attrValues, cols, config, defaults, e, existingOpts, fn, i, initialRender, l, len1, len2, len3, localeDefaults, localeStrings, materializedInput, n, o, opts, pivotTable, recordsProcessed, ref, ref1, ref2, ref3, refresh, refreshDelayed, renderer, rendererControl, shownAttributes, uiTable, unused, unusedAttrsVerticalAutoCutoff, unusedAttrsVerticalAutoOverride, x;
       if (overwrite == null) {
         overwrite = false;
       }
@@ -1184,11 +1184,11 @@
           }
           return recordsProcessed++;
         });
-        uiTable = $("<table>", {
+        uiTable = $("<div>", {
           "class": "pvtUi"
         }).attr("cellpadding", 5);
-        rendererControl = $("<td>");
-        renderer = $("<select>").addClass('pvtRenderer').appendTo(rendererControl).bind("change", function() {
+        rendererControl = $("<div>").addClass('pvtRendererContainer');
+        renderer = $("<select>").addClass('pvtRenderer').addClass('form-control').appendTo(rendererControl).bind("change", function() {
           return refresh();
         });
         ref = opts.renderers;
@@ -1196,7 +1196,8 @@
           if (!hasProp.call(ref, x)) continue;
           $("<option>").val(x).html(x).appendTo(renderer);
         }
-        unused = $("<td>").addClass('pvtAxisContainer pvtUnused');
+        unused = $("<div>").addClass('pvtAxisContainer pvtUnused');
+        unused.append("<div>Drag fields to configure the report:</div>");
         shownAttributes = (function() {
           var results;
           results = [];
@@ -1221,11 +1222,7 @@
           }
           unusedAttrsVerticalAutoOverride = attrLength > unusedAttrsVerticalAutoCutoff;
         }
-        if (opts.unusedAttrsVertical === true || unusedAttrsVerticalAutoOverride) {
-          unused.addClass('pvtVertList');
-        } else {
-          unused.addClass('pvtHorizList');
-        }
+        unused.addClass('pvtVertList');
         fn = function(attr) {
           var attrElem, checkContainer, closeFilterBox, controls, filterItem, filterItemExcluded, finalButtons, hasExcludedItem, len2, n, placeholder, ref1, sorter, triangleLink, v, value, valueCount, valueList, values;
           values = (function() {
@@ -1283,13 +1280,13 @@
               controls.append($("<br>"));
               $("<button>", {
                 type: "button"
-              }).appendTo(controls).html(opts.localeStrings.selectAll).bind("click", function() {
+              }).addClass('btn').addClass('btn-default').appendTo(controls).html(opts.localeStrings.selectAll).bind("click", function() {
                 valueList.find("input:visible:not(:checked)").prop("checked", true).toggleClass("changed");
                 return false;
               });
               $("<button>", {
                 type: "button"
-              }).appendTo(controls).html(opts.localeStrings.selectNone).bind("click", function() {
+              }).addClass('btn').addClass('btn-default').appendTo(controls).html(opts.localeStrings.selectNone).bind("click", function() {
                 valueList.find("input:visible:checked").prop("checked", false).toggleClass("changed");
                 return false;
               });
@@ -1329,7 +1326,7 @@
           if (values.length <= opts.menuLimit) {
             $("<button>", {
               type: "button"
-            }).text(opts.localeStrings.apply).appendTo(finalButtons).bind("click", function() {
+            }).addClass('btn').addClass('btn-info').text(opts.localeStrings.apply).appendTo(finalButtons).bind("click", function() {
               if (valueList.find(".changed").removeClass("changed").length) {
                 refresh();
               }
@@ -1338,7 +1335,7 @@
           }
           $("<button>", {
             type: "button"
-          }).text(opts.localeStrings.cancel).appendTo(finalButtons).bind("click", function() {
+          }).addClass('btn').addClass('btn-default').text(opts.localeStrings.cancel).appendTo(finalButtons).bind("click", function() {
             valueList.find(".changed:checked").removeClass("changed").prop("checked", false);
             valueList.find(".changed:not(:checked)").removeClass("changed").prop("checked", true);
             return closeFilterBox();
@@ -1362,8 +1359,12 @@
           attr = shownAttributes[i];
           fn(attr);
         }
-        tr1 = $("<tr>").appendTo(uiTable);
-        aggregator = $("<select>").addClass('pvtAggregator').bind("change", function() {
+        config = $("<div>").addClass("pvtConfigContainer").appendTo(uiTable);
+        config.append(rendererControl);
+        config.append(unused);
+        $("<div>").addClass('pvtAxisContainer pvtRows').appendTo(config).append("<div>Rows</div>");
+        cols = $("<div>").addClass('pvtAxisContainer pvtCols').appendTo(config).append("<div>Columns</div>");
+        aggregator = $("<select>").addClass('pvtAggregator').addClass('form-control').bind("change", function() {
           return refresh();
         });
         ref1 = opts.aggregators;
@@ -1371,17 +1372,8 @@
           if (!hasProp.call(ref1, x)) continue;
           aggregator.append($("<option>").val(x).html(x));
         }
-        $("<td>").addClass('pvtVals').appendTo(tr1).append(aggregator).append($("<br>"));
-        $("<td>").addClass('pvtAxisContainer pvtHorizList pvtCols').appendTo(tr1);
-        tr2 = $("<tr>").appendTo(uiTable);
-        tr2.append($("<td>").addClass('pvtAxisContainer pvtRows').attr("valign", "top"));
-        pivotTable = $("<td>").attr("valign", "top").addClass('pvtRendererArea').appendTo(tr2);
-        if (opts.unusedAttrsVertical === true || unusedAttrsVerticalAutoOverride) {
-          uiTable.find('tr:nth-child(1)').prepend(rendererControl);
-          uiTable.find('tr:nth-child(2)').prepend(unused);
-        } else {
-          uiTable.prepend($("<tr>").append(rendererControl).append(unused));
-        }
+        $("<div>").addClass('pvtVals').appendTo(config).append("<div>Values</div>").append(aggregator);
+        pivotTable = $("<div>").addClass('pvtRendererArea').appendTo(uiTable);
         this.html(uiTable);
         ref2 = opts.cols;
         for (n = 0, len2 = ref2.length; n < len2; n++) {
@@ -1433,7 +1425,7 @@
             if (numInputsToProcess !== 0) {
               pvtVals = _this.find(".pvtVals");
               for (x = q = 0, ref5 = numInputsToProcess; 0 <= ref5 ? q < ref5 : q > ref5; x = 0 <= ref5 ? ++q : --q) {
-                newDropdown = $("<select>").addClass('pvtAttrDropdown').append($("<option>")).bind("change", function() {
+                newDropdown = $("<select>").addClass('pvtAttrDropdown').addClass('form-control').append($("<option>")).bind("change", function() {
                   return refresh();
                 });
                 for (s = 0, len4 = shownAttributes.length; s < len4; s++) {
@@ -1504,7 +1496,7 @@
             });
             _this.data("pivotUIOptions", pivotUIOptions);
             if (opts.autoSortUnusedAttrs) {
-              unusedAttrsContainer = _this.find("td.pvtUnused.pvtAxisContainer");
+              unusedAttrsContainer = _this.find("div.pvtUnused.pvtAxisContainer");
               $(unusedAttrsContainer).children("li").sort(function(a, b) {
                 return naturalSort($(a).text(), $(b).text());
               }).appendTo(unusedAttrsContainer);
@@ -1532,8 +1524,8 @@
           items: 'li',
           placeholder: 'pvtPlaceholder'
         });
-      } catch (_error) {
-        e = _error;
+      } catch (error) {
+        e = error;
         if (typeof console !== "undefined" && console !== null) {
           console.error(e.stack);
         }
