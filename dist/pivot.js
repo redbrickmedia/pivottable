@@ -1197,7 +1197,6 @@
           $("<option>").val(x).html(x).appendTo(renderer);
         }
         unused = $("<div>").addClass('pvtAxisContainer pvtUnused');
-        unused.append("<div>Drag fields to configure the report:</div>");
         shownAttributes = (function() {
           var results;
           results = [];
@@ -1361,9 +1360,12 @@
         }
         config = $("<div>").addClass("pvtConfigContainer").appendTo(uiTable);
         config.append(rendererControl);
+        $("<h2>Drag fields to configure the report:</h2>").appendTo(config);
         config.append(unused);
-        $("<div>").addClass('pvtAxisContainer pvtRows').appendTo(config).append("<div>Rows</div>");
-        cols = $("<div>").addClass('pvtAxisContainer pvtCols').appendTo(config).append("<div>Columns</div>");
+        $("<h2>Rows</h2>").appendTo(config);
+        $("<div>").addClass('pvtAxisContainer pvtRows').appendTo(config);
+        $("<h2>Columns</h2>").appendTo(config);
+        cols = $("<div>").addClass('pvtAxisContainer pvtCols').appendTo(config);
         aggregator = $("<select>").addClass('pvtAggregator').addClass('form-control').bind("change", function() {
           return refresh();
         });
@@ -1372,7 +1374,8 @@
           if (!hasProp.call(ref1, x)) continue;
           aggregator.append($("<option>").val(x).html(x));
         }
-        $("<div>").addClass('pvtVals').appendTo(config).append("<div>Values</div>").append(aggregator);
+        $("<h2>Values</h2>").appendTo(config);
+        $("<div>").addClass('pvtVals').appendTo(config).append(aggregator);
         pivotTable = $("<div>").addClass('pvtRendererArea').appendTo(uiTable);
         this.html(uiTable);
         ref2 = opts.cols;

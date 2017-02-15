@@ -677,7 +677,6 @@ callWithJQuery ($) ->
 
             #axis list, including the double-click menu
             unused = $("<div>").addClass('pvtAxisContainer pvtUnused')
-            unused.append("<div>Drag fields to configure the report:</div>")
             shownAttributes = (a for a of attrValues when a not in opts.hiddenAttributes)
 
             unusedAttrsVerticalAutoOverride = false
@@ -815,17 +814,21 @@ callWithJQuery ($) ->
             config.append(rendererControl)
 
             #unused attribs
+            $("<h2>Drag fields to configure the report:</h2>")
+              .appendTo(config)
             config.append(unused)
 
             #row axes
+            $("<h2>Rows</h2>")
+              .appendTo(config)
             $("<div>").addClass('pvtAxisContainer pvtRows')
               .appendTo(config)
-              .append("<div>Rows</div>")
 
             #column axes
+            $("<h2>Columns</h2>")
+              .appendTo(config)
             cols = $("<div>").addClass('pvtAxisContainer pvtCols')
               .appendTo(config)
-              .append("<div>Columns</div>")
 
             #aggregator menu and value area
 
@@ -834,9 +837,10 @@ callWithJQuery ($) ->
             for own x of opts.aggregators
                 aggregator.append $("<option>").val(x).html(x)
 
+            $("<h2>Values</h2>")
+              .appendTo(config)
             $("<div>").addClass('pvtVals')
               .appendTo(config)
-              .append("<div>Values</div>")
               .append(aggregator)
 
             #the actual pivot table container
