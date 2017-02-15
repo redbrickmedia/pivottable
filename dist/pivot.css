@@ -49,14 +49,14 @@ table.pvtTable tbody tr td {
 .pvtAxisContainer {
     margin-bottom: 15px;
     padding: 5px;
-    min-height: 55px;
+    min-height: 47px;
     -webkit-border-radius: 2px;
     -moz-border-radius: 2px;
     border-radius: 2px;
     border: 1px dashed #DCE0E9;
 }
 .pvtAxisContainer:empty {
-    padding-top: 20px;
+    padding-top: 15px;
     text-align: center;
     font-size: 12px;
     font-style: italic;
